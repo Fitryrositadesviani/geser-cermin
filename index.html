@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geser Cermin – Sudut Berelasi</title>
+<style>
+:root{
+  --bg:#FFFFFF; --surface:#F6F7FD; --ink:#14183A; --muted:#566086; --line:#DDE2F3;
+  --a:#3446D2; --a-soft:#E5E9FF; --b:#C2410C; --b-soft:#FFEBDD; --y:#F5B800;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0D1130;--surface:#161C40;--ink:#E9ECFF;--muted:#9BA5D1;--line:#272F5C;
+        --a:#8C9BFF;--a-soft:#232C5E;--b:#FF9A63;--b-soft:#3A2418;color-scheme:dark;}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.55 "Figtree","Segoe UI",system-ui,sans-serif;padding:12px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h3{margin:0;font:800 20px/1.2 "Bricolage Grotesque","Trebuchet MS",sans-serif}
+.lead{margin:0;color:var(--muted);font-size:15px}
+svg{width:100%;height:auto;display:block;background:var(--surface);border-radius:12px}
+svg text{font:600 12px "Figtree","Segoe UI",system-ui,sans-serif;fill:var(--ink)}
+.axis{stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.mirror{stroke:var(--ink);stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
+.semi{fill:none;stroke:var(--line);stroke-width:2}
+.tick{font-weight:800;font-size:14px}
+.sub{font-weight:500;font-size:10.5px;fill:var(--muted)}
+.rayA{stroke:var(--a);stroke-width:4;stroke-linecap:round}
+.rayB{stroke:var(--b);stroke-width:4;stroke-linecap:round}
+.arcA{fill:none;stroke:var(--a);stroke-width:2.5}
+.arcB{fill:none;stroke:var(--b);stroke-width:2.5}
+.same{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:3 4}
+.tA{fill:var(--a)!important;font-weight:800!important;font-size:14px!important}
+.tB{fill:var(--b)!important;font-weight:800!important;font-size:14px!important}
+.ctrl{display:flex;align-items:center;gap:12px}
+.ctrl label{font:600 14px ui-monospace,Menlo,monospace;min-width:64px}
+.ctrl input{flex:1;min-width:0;height:30px;accent-color:var(--a)}
+.ctrl .v{font:600 15px ui-monospace,Menlo,monospace;min-width:44px;text-align:right}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;font-size:13px;line-height:1.35;color:var(--muted)}
+.chip b{display:block;color:var(--ink);font:800 18px "Bricolage Grotesque","Trebuchet MS",sans-serif}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:var(--a-soft);font-weight:700}
+tr:last-child td{border-bottom:0}
+td:first-child,th:first-child{text-align:left;font-weight:700}
+.rA td:first-child{color:var(--a)} .rB td:first-child{color:var(--b)}
+.concl{background:var(--a-soft);border-radius:12px;padding:12px 14px;font-size:15px}
+.concl b{display:block;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h3>Geser cermin</h3>
+  <p class="lead">Dua garis saling bercermin terhadap garis 90°. Geser sudut α, lalu perhatikan sin, cos, dan tan keduanya.</p>
+
+  <svg viewBox="0 0 360 232" role="img" aria-label="Dua garis bercermin terhadap garis 90 derajat. Garis acuan: 0 derajat di kanan, 90 derajat di atas, 180 derajat di kiri.">
+    <!-- setengah lingkaran -->
+    <path class="semi" d="M40 190 A140 140 0 0 1 320 190"/>
+    <!-- garis acuan -->
+    <line class="axis" x1="30" y1="190" x2="330" y2="190"/>
+    <line class="mirror" x1="180" y1="190" x2="180" y2="44"/>
+    <!-- label 0, 90, 180 -->
+    <text class="tick" x="330" y="210" text-anchor="middle">0°</text>
+    <text class="sub" x="330" y="223" text-anchor="middle">sumbu x +</text>
+    <text class="tick" x="30" y="210" text-anchor="middle">180°</text>
+    <text class="sub" x="30" y="223" text-anchor="middle">sumbu x −</text>
+    <text class="tick" x="180" y="30" text-anchor="middle">90°</text>
+    <text class="sub" x="190" y="60">cermin</text>
+    <!-- garis sama tinggi -->
+    <line id="same" class="same"/>
+    <!-- sinar -->
+    <line id="rA" class="rayA" x1="180" y1="190"/>
+    <line id="rB" class="rayB" x1="180" y1="190"/>
+    <!-- busur -->
+    <path id="aA" class="arcA"/>
+    <path id="aB" class="arcB"/>
+    <text id="lA" class="tA"></text>
+    <text id="lB" class="tB"></text>
+    <!-- titik -->
+    <circle id="pA" r="7" fill="var(--a)" stroke="var(--bg)" stroke-width="2"/>
+    <circle id="pB" r="7" fill="var(--b)" stroke="var(--bg)" stroke-width="2"/>
+    <text id="nA" class="tA" text-anchor="middle"></text>
+    <text id="nB" class="tB" text-anchor="middle"></text>
+  </svg>
+
+  <div class="legend" aria-label="Arti tiga garis acuan">
+    <div class="chip"><b>0°</b>garis kanan<br>(sumbu x positif)</div>
+    <div class="chip"><b>90°</b>garis tegak, putus-putus<br>(garis cermin)</div>
+    <div class="chip"><b>180°</b>garis kiri<br>(sumbu x negatif)</div>
+  </div>
+
+  <div class="ctrl">
+    <label for="ang">Sudut α</label>
+    <input id="ang" type="range" min="10" max="80" step="5" value="40">
+    <span class="v" id="av"></span>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Sudut</th><th>sin</th><th>cos</th><th>tan</th></tr></thead>
+      <tbody id="tb" aria-live="polite"></tbody>
+    </table>
+  </div>
+
+  <div class="concl">Garis biru di sudut α, garis oranye di sudut 180° − α. Bandingkan kedua barisnya.
+    <b>sin sama · cos dan tan berlawanan tanda</b></div>
+</div>
+
+<script>
+(function(){
+  var O={x:180,y:190}, R=140, r1=44, r2=44;
+  var $=function(i){return document.getElementById(i)};
+  function fmt(v){ if(Math.abs(v)<1e-9) v=0; return v.toLocaleString('id-ID',{minimumFractionDigits:3,maximumFractionDigits:3}); }
+  function setLine(id,x2,y2){ var l=$(id); l.setAttribute('x2',x2); l.setAttribute('y2',y2); l.setAttribute('x1',O.x); l.setAttribute('y1',O.y); }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function draw(){
+    var a=+$('ang').value, t=a*Math.PI/180, c=Math.cos(t), s=Math.sin(t);
+    var xA=O.x+R*c, xB=O.x-R*c, y=O.y-R*s;
+    setLine('rA',xA,y); setLine('rB',xB,y);
+    var sm=$('same'); sm.setAttribute('x1',xB); sm.setAttribute('x2',xA); sm.setAttribute('y1',y); sm.setAttribute('y2',y);
+    $('pA').setAttribute('cx',xA); $('pA').setAttribute('cy',y);
+    $('pB').setAttribute('cx',xB); $('pB').setAttribute('cy',y);
+    // busur α dari garis 0° (kanan) dan dari garis 180° (kiri)
+    $('aA').setAttribute('d','M'+(O.x+r1)+' '+O.y+' A'+r1+' '+r1+' 0 0 0 '+(O.x+r1*c)+' '+(O.y-r1*s));
+    $('aB').setAttribute('d','M'+(O.x-r1)+' '+O.y+' A'+r1+' '+r1+' 0 0 1 '+(O.x-r1*c)+' '+(O.y-r1*s));
+    var m=t/2, lr=r1+16;
+    var lA=$('lA'); lA.setAttribute('x',O.x+lr*Math.cos(m)); lA.setAttribute('y',O.y-lr*Math.sin(m)+4); lA.setAttribute('text-anchor','middle'); lA.textContent='α';
+    var lB=$('lB'); lB.setAttribute('x',O.x-lr*Math.cos(m)); lB.setAttribute('y',O.y-lr*Math.sin(m)+4); lB.setAttribute('text-anchor','middle'); lB.textContent='α';
+    // nilai sudut di ujung garis
+    var nA=$('nA'), nB=$('nB');
+    nA.setAttribute('x',clamp(xA,24,336)); nA.setAttribute('y',y-13); nA.textContent=a+'°';
+    nB.setAttribute('x',clamp(xB,28,332)); nB.setAttribute('y',y-13); nB.textContent=(180-a)+'°';
+    $('av').textContent=a+'°';
+    $('tb').innerHTML=
+      '<tr class="rA"><td>'+a+'°</td><td>'+fmt(s)+'</td><td>'+fmt(c)+'</td><td>'+fmt(s/c)+'</td></tr>'+
+      '<tr class="rB"><td>'+(180-a)+'°</td><td>'+fmt(s)+'</td><td>'+fmt(-c)+'</td><td>'+fmt(-s/c)+'</td></tr>';
+  }
+  $('ang').addEventListener('input',draw);
+  draw();
+})();
+</script>
+</body>
+</html>
